@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Models;
+
+use App\Services\GvgScoreCalculator;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class GvgWeeklyStat extends Model
+{
+    protected $fillable = [
+        'guild_member_id',
+        'week_start_date',
+        'kills',
+        'deaths',
+        'revives',
+        'war_score',
+    ];
+
+    protected $casts = [
+        'week_start_date' => 'date',
+    ];
+
+    public function guildMember(): BelongsTo
+    {
+        return $this->belongsTo(GuildMember::class);
+    }
+
+    public function calculatedScore(string $role = 'dps'): float
+    {
+        return app(GvgScoreCalculator::class)->calculate(
+            $this->kills,
+            $this->deaths,
+            $this->revives,
+            $this->war_score,
+            $role
+        );
+    }
+
+    public function calculatedScoreAuto(): float
+    {
+        $role = $this->guildMember?->role ?? 'dps';
+
+        return $this->calculatedScore($role);
+    }
+}
