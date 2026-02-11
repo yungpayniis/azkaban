@@ -74,7 +74,7 @@
                 <label for="tier-filter">Tier</label>
                 <select id="tier-filter">
                     <option value="">ทั้งหมด</option>
-                    @foreach (['low' => 'Low', 'middle' => 'Middle', 'top' => 'Top'] as $value => $label)
+                    @foreach (['top' => 'Top', 'middle' => 'Middle', 'low' => 'Low'] as $value => $label)
                         <option value="tier-{{ $value }}">{{ $label }}</option>
                     @endforeach
                 </select>

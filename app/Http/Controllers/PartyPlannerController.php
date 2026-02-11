@@ -28,6 +28,7 @@ class PartyPlannerController extends Controller
         $unassignedMembers = GuildMember::where('status', GuildMember::STATUS_ACTIVE)
             ->whereNotIn('id', $assignedMemberIds)
             ->with('jobClass.parent')
+            ->orderByRaw("CASE tier WHEN 'top' THEN 1 WHEN 'middle' THEN 2 WHEN 'low' THEN 3 ELSE 4 END")
             ->orderBy('name')
             ->get();
         $jobClasses = JobClass::orderBy('tier')->orderBy('name')->get();

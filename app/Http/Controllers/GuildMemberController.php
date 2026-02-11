@@ -62,11 +62,13 @@ class GuildMemberController extends Controller
         $stats = $this->validateStats($request);
         $originalName = $guildMember->name;
         $guildMember->update($data);
-        $guildMember->stat()->updateOrCreate(
+        $stat = $guildMember->stat()->updateOrCreate(
             ['guild_member_id' => $guildMember->id],
             $stats
         );
-        $guildMember->statHistories()->create($stats);
+        if ($stat->wasRecentlyCreated || $stat->wasChanged()) {
+            $guildMember->statHistories()->create($stats);
+        }
         if ($originalName !== $guildMember->name) {
             $guildMember->nameHistories()->create([
                 'name' => $guildMember->name,
