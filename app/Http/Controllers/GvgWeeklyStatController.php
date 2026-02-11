@@ -45,6 +45,7 @@ class GvgWeeklyStatController extends Controller
                 'revives' => $stat->revives,
                 'war_score' => $stat->war_score,
                 'score' => $stat->calculatedScoreAuto(),
+                'combat_power' => $stat->calculatedCombatPower(),
             ];
         })->sortByDesc('score')->values();
 

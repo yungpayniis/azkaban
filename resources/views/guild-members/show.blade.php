@@ -41,6 +41,8 @@
         @endif
 
         @if ($guildMember->gvgWeeklyStats->count() > 0)
+            @php $latestGvg = $guildMember->gvgWeeklyStats->sortByDesc('week_start_date')->first(); @endphp
+            <p>CP (ผลงาน GVG ล่าสุด): <strong>{{ number_format($latestGvg?->calculatedCombatPower() ?? 0, 1) }}</strong></p>
             <h3>ผลงาน GVG ล่าสุด</h3>
             <table class="datatable">
                 <thead>
@@ -50,6 +52,7 @@
                         <th>ตาย</th>
                         <th>ชุบ</th>
                         <th>แต้มวอร์</th>
+                        <th>CP</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,6 +63,7 @@
                             <td>{{ $stat->deaths }}</td>
                             <td>{{ $stat->revives }}</td>
                             <td>{{ $stat->war_score }}</td>
+                            <td>{{ number_format($stat->calculatedCombatPower(), 1) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

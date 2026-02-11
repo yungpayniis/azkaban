@@ -27,6 +27,7 @@
                     <th>ชุบ</th>
                     <th>แต้มวอร์</th>
                     <th>คะแนนอัตโนมัติ</th>
+                    <th>CP</th>
                     <th>จัดการ</th>
                 </tr>
             </thead>
@@ -41,6 +42,7 @@
                         <td>{{ $stat->revives }}</td>
                         <td>{{ $stat->war_score }}</td>
                         <td>{{ number_format($stat->calculatedScoreAuto(), 1) }}</td>
+                        <td>{{ number_format($stat->calculatedCombatPower(), 1) }}</td>
                         <td class="actions">
                             <a class="btn" href="{{ route('gvg-weekly-stats.show', $stat) }}">ดู</a>
                             <a class="btn" href="{{ route('gvg-weekly-stats.edit', $stat) }}">แก้ไข</a>
@@ -53,7 +55,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="muted">ยังไม่มีผลงาน GVG</td>
+                        <td colspan="9" class="muted">ยังไม่มีผลงาน GVG</td>
                     </tr>
                 @endforelse
             </tbody>

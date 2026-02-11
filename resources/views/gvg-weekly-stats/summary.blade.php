@@ -39,6 +39,7 @@
                     <th>ชุบ</th>
                     <th>แต้มวอร์</th>
                     <th>คะแนนรวม</th>
+                    <th>CP</th>
                 </tr>
             </thead>
             <tbody>
@@ -53,6 +54,7 @@
                         <td>{{ $row['revives'] }}</td>
                         <td>{{ $row['war_score'] }}</td>
                         <td>{{ number_format($row['score'], 1) }}</td>
+                        <td>{{ number_format($row['combat_power'], 1) }}</td>
                     </tr>
                 @endforeach
             </tbody>

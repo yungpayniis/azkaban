@@ -11,6 +11,7 @@
         <p>จำนวนชุบ: <strong>{{ $gvgWeeklyStat->revives }}</strong></p>
         <p>แต้มวอร์: <strong>{{ $gvgWeeklyStat->war_score }}</strong></p>
         <p>คะแนนอัตโนมัติ: <strong>{{ number_format($gvgWeeklyStat->calculatedScoreAuto(), 1) }}</strong></p>
+        <p>CP: <strong>{{ number_format($gvgWeeklyStat->calculatedCombatPower(), 1) }}</strong></p>
 
         <div class="actions" style="margin-top: 16px;">
             <a class="btn" href="{{ route('gvg-weekly-stats.edit', $gvgWeeklyStat) }}">แก้ไข</a>
