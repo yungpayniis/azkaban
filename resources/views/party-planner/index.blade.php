@@ -15,6 +15,11 @@
                 <input type="text" name="name" placeholder="ชื่อ pt (ไม่บังคับ)">
                 <button type="submit">เพิ่ม pt</button>
             </form>
+            <form method="POST" action="{{ route('party-planner.parties.destroy-all') }}" onsubmit="return confirm('ลบปาร์ตี้ทั้งหมด? ข้อมูลจัดปาร์ตี้ทั้งหมดจะหายถาวร');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger">ลบปาร์ตี้ทั้งหมด</button>
+            </form>
             <button type="button" class="btn" id="auto-assign-btn">จัดปาร์ตี้ออโต้</button>
         </div>
     </div>

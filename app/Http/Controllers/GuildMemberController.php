@@ -6,6 +6,7 @@ use App\Models\GuildMember;
 use App\Models\GuildMemberNameHistory;
 use App\Models\JobClass;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class GuildMemberController extends Controller
 {
@@ -58,7 +59,7 @@ class GuildMemberController extends Controller
 
     public function update(Request $request, GuildMember $guildMember)
     {
-        $data = $this->validatePayload($request);
+        $data = $this->validatePayload($request, $guildMember);
         $stats = $this->validateStats($request);
         $originalName = $guildMember->name;
         $guildMember->update($data);
@@ -89,10 +90,16 @@ class GuildMemberController extends Controller
             ->with('status', 'ลบสมาชิกเรียบร้อย');
     }
 
-    private function validatePayload(Request $request): array
+    private function validatePayload(Request $request, ?GuildMember $guildMember = null): array
     {
+        $nameRules = ['required', 'string', 'max:255', Rule::unique('guild_members', 'name')];
+
+        if ($guildMember) {
+            $nameRules = ['required', 'string', 'max:255', Rule::unique('guild_members', 'name')->ignore($guildMember->id)];
+        }
+
         return $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => $nameRules,
             'job_class_id' => ['nullable', 'integer', 'exists:job_classes,id'],
             'tier' => ['required', 'in:low,middle,top'],
             'role' => ['required', 'in:dps,support,tank'],

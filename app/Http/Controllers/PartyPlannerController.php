@@ -319,4 +319,13 @@ class PartyPlannerController extends Controller
             ->route('party-planner.index')
             ->with('status', 'ลบปาร์ตี้เรียบร้อย');
     }
+
+    public function destroyAll()
+    {
+        Party::query()->delete();
+
+        return redirect()
+            ->route('party-planner.index')
+            ->with('status', 'ลบปาร์ตี้ทั้งหมดเรียบร้อย');
+    }
 }

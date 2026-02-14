@@ -19,6 +19,7 @@ Route::resource('gvg-weekly-stats', GvgWeeklyStatController::class);
 
 Route::get('party-planner', [PartyPlannerController::class, 'index'])->name('party-planner.index');
 Route::post('party-planner/parties', [PartyPlannerController::class, 'store'])->name('party-planner.parties.store');
+Route::delete('party-planner/parties', [PartyPlannerController::class, 'destroyAll'])->name('party-planner.parties.destroy-all');
 Route::patch('party-planner/parties/{party}', [PartyPlannerController::class, 'update'])
     ->name('party-planner.parties.update');
 Route::delete('party-planner/parties/{party}', [PartyPlannerController::class, 'destroy'])->name('party-planner.parties.destroy');
