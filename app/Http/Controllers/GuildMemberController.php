@@ -15,6 +15,7 @@ class GuildMemberController extends Controller
         $members = GuildMember::with('jobClass.parent')
             ->orderBy('status')
             ->orderBy('name')
+            ->where('status', 'active')
             ->get();
 
         return view('guild-members.index', compact('members'));
@@ -104,7 +105,7 @@ class GuildMemberController extends Controller
             'tier' => ['required', 'in:low,middle,top'],
             'role' => ['required', 'in:dps,support,tank'],
             'nationality' => ['required', 'in:thai,foreign'],
-            'status' => ['required', 'in:'.GuildMember::STATUS_ACTIVE.','.GuildMember::STATUS_LEFT],
+            'status' => ['required', 'in:' . GuildMember::STATUS_ACTIVE . ',' . GuildMember::STATUS_LEFT],
             'joined_at' => ['required', 'date'],
         ]);
     }
