@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GuildMember;
 use App\Models\GuildMemberNameHistory;
 use App\Models\JobClass;
+use App\Models\PartySlot;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -12,13 +13,26 @@ class GuildMemberController extends Controller
 {
     public function index()
     {
+        $latestSaturday = now()->isSaturday()
+            ? now()->copy()->startOfDay()
+            : now()->previous(\Carbon\Carbon::SATURDAY)->startOfDay();
+
         $members = GuildMember::with('jobClass.parent')
+            ->withCount('redCards')
+            ->withCount([
+                'gvgWeeklyStats as latest_saturday_gvg_count' => function ($query) use ($latestSaturday) {
+                    $query->whereDate('week_start_date', $latestSaturday->toDateString());
+                },
+            ])
             ->orderBy('status')
             ->orderBy('name')
             ->where('status', 'active')
             ->get();
 
-        return view('guild-members.index', compact('members'));
+        return view('guild-members.index', [
+            'members' => $members,
+            'latestSaturday' => $latestSaturday,
+        ]);
     }
 
     public function create()
@@ -46,9 +60,42 @@ class GuildMemberController extends Controller
 
     public function show(GuildMember $guildMember)
     {
-        $guildMember->load('jobClass', 'gvgWeeklyStats', 'nameHistories', 'stat', 'statHistories');
+        $guildMember->load('jobClass', 'gvgWeeklyStats', 'nameHistories', 'stat', 'statHistories', 'redCards');
 
         return view('guild-members.show', compact('guildMember'));
+    }
+
+    public function issueRedCard(Request $request, GuildMember $guildMember)
+    {
+        if ($guildMember->status === GuildMember::STATUS_LEFT) {
+            return redirect()
+                ->route('guild-members.show', $guildMember)
+                ->with('status', 'สมาชิกออกจากกิลแล้ว ไม่สามารถแจกใบแดงเพิ่มได้');
+        }
+
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        $guildMember->redCards()->create([
+            'reason' => trim($data['reason']),
+            'issued_at' => now(),
+        ]);
+
+        $redCardCount = $guildMember->redCards()->count();
+
+        if ($redCardCount >= 3) {
+            $guildMember->update(['status' => GuildMember::STATUS_LEFT]);
+            PartySlot::where('member_id', $guildMember->id)->update(['member_id' => null]);
+
+            return redirect()
+                ->route('guild-members.show', $guildMember)
+                ->with('status', 'แจกใบแดงสำเร็จ (ครบ 3 ใบ) ระบบนำสมาชิกออกจากกิลแล้ว');
+        }
+
+        return redirect()
+            ->route('guild-members.show', $guildMember)
+            ->with('status', "แจกใบแดงสำเร็จ ({$redCardCount}/3 ใบ)");
     }
 
     public function edit(GuildMember $guildMember)
@@ -129,5 +176,16 @@ class GuildMemberController extends Controller
         ]);
 
         return $data['stats'];
+    }
+
+    public function leftMembers()
+    {
+        $members = GuildMember::with('jobClass.parent')
+            ->withCount('redCards')
+            ->where('status', GuildMember::STATUS_LEFT)
+            ->orderBy('name')
+            ->get();
+
+        return view('guild-members.left', compact('members'));
     }
 }

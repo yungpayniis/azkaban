@@ -11,6 +11,52 @@
         <p>สัญชาติ: <strong>{{ $guildMember->nationality === 'foreign' ? 'ต่างชาติ' : 'คนไทย' }}</strong></p>
         <p>วันที่เข้ากิล: <strong>{{ $guildMember->joined_at->format('Y-m-d H:i') }}</strong></p>
         <p>สถานะ: <strong>{{ $guildMember->status === 'left' ? 'ออกจากกิลแล้ว' : 'Active' }}</strong></p>
+        <p>ใบแดงสะสม: <strong>{{ $guildMember->redCards->count() }}/3</strong></p>
+
+        @if ($guildMember->status === \App\Models\GuildMember::STATUS_ACTIVE)
+            <form method="POST" action="{{ route('guild-members.red-cards.store', $guildMember) }}" style="margin: 12px 0 16px;">
+                @csrf
+                <label for="red-card-reason" style="display: block; margin-bottom: 6px;">เหตุผลการแจกใบแดง</label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <input
+                        id="red-card-reason"
+                        type="text"
+                        name="reason"
+                        maxlength="255"
+                        required
+                        placeholder="เช่น ขาดกิจกรรม, ทำผิดกติกากิล"
+                        style="min-width: 280px; flex: 1; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
+                    >
+                    <button
+                        class="btn btn-danger"
+                        type="submit"
+                        onclick="return confirm('ยืนยันแจกใบแดง? หากครบ 3 ใบจะถูกนำออกจากกิลทันที');"
+                    >
+                        แจกใบแดง
+                    </button>
+                </div>
+            </form>
+        @endif
+
+        @if ($guildMember->redCards->count() > 0)
+            <h3>ประวัติใบแดง</h3>
+            <table class="datatable">
+                <thead>
+                    <tr>
+                        <th>เวลา</th>
+                        <th>เหตุผล</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($guildMember->redCards->sortByDesc('issued_at') as $redCard)
+                        <tr>
+                            <td>{{ $redCard->issued_at?->format('Y-m-d H:i') ?? '-' }}</td>
+                            <td>{{ $redCard->reason }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
 
         @if ($guildMember->stat)
             <h3>ค่าสเตตัสล่าสุด</h3>

@@ -75,4 +75,19 @@ class KvmPartyPlannerController extends Controller
             ->route('kvm-planner.index')
             ->with('status', 'สร้างปาร์ตี้ KVM ใหม่แล้ว');
     }
+
+    public function addMemberSlot(KvmParty $kvmParty)
+    {
+        $nextPosition = ((int) $kvmParty->slots()->max('position')) + 1;
+
+        KvmPartySlot::create([
+            'kvm_party_id' => $kvmParty->id,
+            'position' => $nextPosition,
+            'member_id' => null,
+        ]);
+
+        return redirect()
+            ->route('kvm-planner.index')
+            ->with('status', "เพิ่มช่องสมาชิกสำรองให้ {$kvmParty->name} แล้ว");
+    }
 }

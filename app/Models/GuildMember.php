@@ -55,4 +55,9 @@ class GuildMember extends Model
     {
         return $this->hasMany(GuildMemberNameHistory::class);
     }
+
+    public function redCards(): HasMany
+    {
+        return $this->hasMany(GuildMemberRedCard::class);
+    }
 }

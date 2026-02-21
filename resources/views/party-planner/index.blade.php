@@ -56,12 +56,25 @@
                         @php
                             $color = MemberColorService::colorFor($slot->member);
                             $textColor = MemberColorService::textColorFor($slot->member);
-                            $eligible = $slot->member->joined_at ? $slot->member->joined_at->diffInDays(now()) >= 7 : false;
+                            $eligibleAt = $slot->member->joined_at?->copy()->addDays(7);
+                            $eligible = $eligibleAt ? now()->greaterThanOrEqualTo($eligibleAt) : false;
                         @endphp
                         <div class="member-card {{ $eligible ? '' : 'ineligible' }}" data-member-id="{{ $slot->member->id }}"
                             style="{{ $color ? "background: {$color}; color: {$textColor};" : '' }}"
                             data-eligible="{{ $eligible ? '1' : '0' }}">
-                            {{ $slot->member->name }}
+                            @php
+                                $remainingLabel = null;
+                                if (!$eligible && $eligibleAt) {
+                                    $secondsRemaining = max(0, now()->diffInSeconds($eligibleAt, false));
+                                    $daysRemaining = intdiv($secondsRemaining, 86400);
+                                    $hoursRemaining = intdiv($secondsRemaining % 86400, 3600);
+                                    $remainingLabel = $daysRemaining . ' วัน ' . $hoursRemaining . ' ชั่วโมง';
+                                }
+                            @endphp
+                            @if ($remainingLabel !== null)
+                                <span class="days-remaining">เหลืออีก {{ $remainingLabel }}</span>
+                            @endif
+                            <span class="member-name">{{ $slot->member->name }}</span>
                         </div>
                                     @else
                                         <div class="member-card empty">ว่าง</div>
@@ -74,7 +87,7 @@
             </div>
         </div>
         <div class="planner-right">
-            <h3>สมาชิกยังไม่มี pt</h3>
+            <h3>สมาชิกยังไม่มี pt (พร้อมลง + รอเวลา)</h3>
             <div class="field filters">
                 <label for="tier-filter">Tier</label>
                 <select id="tier-filter">
@@ -93,20 +106,40 @@
                     @endforeach
                 </select>
             </div>
+            <div class="field filters">
+                <label for="eligible-filter">สถานะลง GVG</label>
+                <select id="eligible-filter">
+                    <option value="">ทั้งหมด</option>
+                    <option value="1">พร้อมลง</option>
+                </select>
+            </div>
             <input type="text" id="unassigned-search" placeholder="ค้นหาชื่อสมาชิก..." autocomplete="off">
             <div id="unassigned-pool">
                 @forelse ($unassignedMembers as $member)
                     @php
                         $color = MemberColorService::colorFor($member);
                         $textColor = MemberColorService::textColorFor($member);
-                        $eligible = $member->joined_at ? $member->joined_at->diffInDays(now()) >= 7 : false;
+                        $eligibleAt = $member->joined_at?->copy()->addDays(7);
+                        $eligible = $eligibleAt ? now()->greaterThanOrEqualTo($eligibleAt) : false;
                     @endphp
                     <div class="member-card {{ $eligible ? '' : 'ineligible' }}" data-member-id="{{ $member->id }}"
                         data-tier="tier-{{ $member->tier ?? '' }}"
                         data-job-class="{{ $member->jobClass->id ?? '' }}"
                         style="{{ $color ? "background: {$color}; color: {$textColor};" : '' }}"
                         data-eligible="{{ $eligible ? '1' : '0' }}">
-                        {{ $member->name }}
+                        @php
+                            $remainingLabel = null;
+                            if (!$eligible && $eligibleAt) {
+                                $secondsRemaining = max(0, now()->diffInSeconds($eligibleAt, false));
+                                $daysRemaining = intdiv($secondsRemaining, 86400);
+                                $hoursRemaining = intdiv($secondsRemaining % 86400, 3600);
+                                $remainingLabel = $daysRemaining . ' วัน ' . $hoursRemaining . ' ชั่วโมง';
+                            }
+                        @endphp
+                        @if ($remainingLabel !== null)
+                            <span class="days-remaining">เหลืออีก {{ $remainingLabel }}</span>
+                        @endif
+                        <span class="member-name">{{ $member->name }}</span>
                     </div>
                 @empty
                     <div class="muted">ไม่มีสมาชิกว่าง</div>
@@ -304,22 +337,26 @@
 
         const tierFilter = document.getElementById('tier-filter');
         const jobClassFilter = document.getElementById('job-class-filter');
+        const eligibleFilter = document.getElementById('eligible-filter');
 
         function filterUnassignedMembers() {
             const query = searchInput.value.toLowerCase();
             const tierValue = tierFilter.value;
             const jobClassValue = jobClassFilter.value;
+            const eligibleValue = eligibleFilter.value;
             unassignedPool.querySelectorAll('.member-card').forEach((card) => {
                 const matchesSearch = card.textContent.toLowerCase().includes(query);
                 const matchesTier = !tierValue || card.dataset.tier === tierValue;
                 const matchesClass = !jobClassValue || card.dataset.jobClass === jobClassValue;
-                card.style.display = matchesSearch && matchesTier && matchesClass ? '' : 'none';
+                const matchesEligible = !eligibleValue || card.dataset.eligible === eligibleValue;
+                card.style.display = matchesSearch && matchesTier && matchesClass && matchesEligible ? '' : 'none';
             });
         }
 
         searchInput.addEventListener('input', filterUnassignedMembers);
         tierFilter.addEventListener('change', filterUnassignedMembers);
         jobClassFilter.addEventListener('change', filterUnassignedMembers);
+        eligibleFilter.addEventListener('change', filterUnassignedMembers);
 
         const autoAssignBtn = document.getElementById('auto-assign-btn');
         if (autoAssignBtn) {
@@ -522,6 +559,16 @@
             text-align: center;
             cursor: grab;
             font-weight: 600;
+        }
+        .days-remaining {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+            opacity: 0.95;
+        }
+        .member-name {
+            display: block;
         }
         .member-card.empty {
             background: #e2e8f0;

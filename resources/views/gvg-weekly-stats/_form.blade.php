@@ -17,7 +17,14 @@
 
 <div class="field">
     <label for="week_start_date">สัปดาห์เริ่ม</label>
-    <input id="week_start_date" name="week_start_date" type="date" value="{{ old('week_start_date', isset($gvgWeeklyStat) ? $gvgWeeklyStat->week_start_date->format('Y-m-d') : '') }}" required>
+    <input
+        id="week_start_date"
+        name="week_start_date"
+        type="date"
+        value="{{ old('week_start_date', isset($gvgWeeklyStat) ? $gvgWeeklyStat->week_start_date->format('Y-m-d') : ($defaultWeekStartDate ?? '')) }}"
+        @if (($lockWeekStartDate ?? false) === true) readonly @endif
+        required
+    >
     @error('week_start_date')
         <div class="error">{{ $message }}</div>
     @enderror

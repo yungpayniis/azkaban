@@ -20,8 +20,16 @@
             <div class="party-grid">
                 @foreach ($parties as $index => $party)
                     <div class="party-card">
-                        <h2>{{ $party->name }}</h2>
-                        <p class="pt-meta">pt{{ $index + 1 }}</p>
+                        <div class="party-card-header">
+                            <div>
+                                <h2>{{ $party->name }}</h2>
+                                <p class="pt-meta">pt{{ $index + 1 }}</p>
+                            </div>
+                            <form method="POST" action="{{ route('kvm-planner.parties.slots.store', $party) }}">
+                                @csrf
+                                <button type="submit" class="btn btn-sm">+ เพิ่มสมาชิกในตี้</button>
+                            </form>
+                        </div>
                         <div class="slots">
                             @foreach ($party->slots as $slot)
                                 <div class="slot" data-slot-id="{{ $slot->id }}">
@@ -344,6 +352,13 @@
         }
         .party-card h2 {
             margin: 0 0 12px;
+        }
+        .party-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
         }
         .party-card .pt-meta {
             margin: 0 0 12px;

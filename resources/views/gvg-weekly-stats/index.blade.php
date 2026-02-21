@@ -2,7 +2,6 @@
 
 @section('title', 'ผลงาน GVG รายสัปดาห์')
 
-@php use App\Services\MemberColorService; @endphp
 @section('content')
 <style>
     .gvg-wide .container {
@@ -12,6 +11,7 @@
 <div class="gvg-wide">
     <div class="actions" style="margin-bottom: 16px;">
         <a class="btn btn-primary" href="{{ route('gvg-weekly-stats.create') }}">เพิ่มผลงาน GVG</a>
+        <a class="btn" href="{{ route('gvg-weekly-stats.import-json.form') }}">นำเข้า JSON</a>
         <a class="btn" href="{{ route('gvg-weekly-stats.summary') }}">สรุปคะแนน GVG</a>
         <a class="btn" href="{{ route('guild-members.index') }}">สมาชิกกิล</a>
     </div>
@@ -33,8 +33,7 @@
             </thead>
             <tbody>
                 @forelse ($stats as $stat)
-                    @php $rowColor = MemberColorService::colorFor($stat->guildMember); @endphp
-                    <tr style="{{ $rowColor ? "background-color: {$rowColor} !important; color: #fff !important;" : '' }}">
+                    <tr>
                         <td>{{ $stat->guildMember?->name ?? '-' }}</td>
                         <td>{{ $stat->week_start_date->format('Y-m-d') }}</td>
                         <td>{{ $stat->kills }}</td>
