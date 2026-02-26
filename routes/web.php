@@ -28,7 +28,10 @@ Route::post('gvg-weekly-stats/import-json', [GvgWeeklyStatController::class, 'im
 Route::resource('gvg-weekly-stats', GvgWeeklyStatController::class);
 
 Route::get('party-planner', [PartyPlannerController::class, 'index'])->name('party-planner.index');
+Route::get('party-planner/view', [PartyPlannerController::class, 'view'])->name('party-planner.view');
 Route::post('party-planner/parties', [PartyPlannerController::class, 'store'])->name('party-planner.parties.store');
+Route::post('party-planner/parties/reorder', [PartyPlannerController::class, 'reorder'])
+    ->name('party-planner.parties.reorder');
 Route::delete('party-planner/parties', [PartyPlannerController::class, 'destroyAll'])->name('party-planner.parties.destroy-all');
 Route::patch('party-planner/parties/{party}', [PartyPlannerController::class, 'update'])
     ->name('party-planner.parties.update');

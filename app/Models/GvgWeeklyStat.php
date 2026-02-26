@@ -46,10 +46,6 @@ class GvgWeeklyStat extends Model
 
     public function calculatedCombatPower(): float
     {
-        if ($this->deaths === 0) {
-            return 0.0;
-        }
-
         $base = ($this->kills * 4) + ($this->revives * 3);
         $multiplier = 1 + (($this->war_score - 1500) / 3000);
         $result = ($base * $multiplier) / ($this->deaths + 1);

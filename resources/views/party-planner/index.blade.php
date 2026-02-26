@@ -20,6 +20,7 @@
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger">ลบปาร์ตี้ทั้งหมด</button>
             </form>
+            <a class="btn" href="{{ route('party-planner.view') }}" target="_blank" rel="noopener">ดูรายชื่อรวมทั้งหมด</a>
             <button type="button" class="btn" id="auto-assign-btn">จัดปาร์ตี้ออโต้</button>
         </div>
     </div>
@@ -29,8 +30,9 @@
     <div class="planner-left">
             <div class="party-grid">
                 @foreach ($parties as $party)
-                    <div class="party-card">
+                    <div class="party-card" data-party-id="{{ $party->id }}">
                     <div class="party-card-header">
+                        <button type="button" class="btn btn-sm party-drag-handle">ย้ายลำดับ</button>
                         <div class="party-name-display" data-party-name>
                             <span class="party-name-text">{{ $party->name }}</span>
                             <button type="button" class="btn btn-sm btn-icon" data-edit-party-name aria-label="แก้ไขชื่อปาร์ตี้">
@@ -183,6 +185,39 @@
                     'X-CSRF-TOKEN': csrfToken,
                 },
                 body: JSON.stringify({ updates }),
+            })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error('save_failed');
+                }
+                return res.json();
+            })
+            .catch(() => {
+                alert('บันทึกการสลับสมาชิกไม่สำเร็จ');
+            });
+        }
+
+        function savePartyOrder() {
+            const partyIds = Array.from(document.querySelectorAll('.party-card'))
+                .map((card) => parseInt(card.dataset.partyId, 10))
+                .filter((id) => !Number.isNaN(id));
+
+            fetch("{{ route('party-planner.parties.reorder') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                },
+                body: JSON.stringify({ party_ids: partyIds }),
+            })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error('reorder_failed');
+                }
+                return res.json();
+            })
+            .catch(() => {
+                alert('บันทึกลำดับปาร์ตี้ไม่สำเร็จ');
             });
         }
 
@@ -334,6 +369,20 @@
                 isDragging = false;
             },
         });
+
+        const partyGrid = document.querySelector('.party-grid');
+        if (partyGrid) {
+            new Sortable(partyGrid, {
+                animation: 150,
+                draggable: '.party-card',
+                handle: '.party-drag-handle',
+                onEnd: (evt) => {
+                    if (evt.oldIndex !== evt.newIndex) {
+                        savePartyOrder();
+                    }
+                },
+            });
+        }
 
         const tierFilter = document.getElementById('tier-filter');
         const jobClassFilter = document.getElementById('job-class-filter');
@@ -494,6 +543,10 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
+        }
+        .party-drag-handle {
+            cursor: move;
+            flex-shrink: 0;
         }
         .party-name-display {
             display: flex;

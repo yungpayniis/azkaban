@@ -42,7 +42,25 @@ class KvmPartyPlannerController extends Controller
             'updates.*.member_id' => ['nullable', 'integer', 'exists:guild_members,id'],
         ]);
 
+        $memberIds = collect($data['updates'])
+            ->pluck('member_id')
+            ->filter(fn ($memberId) => $memberId !== null)
+            ->values();
+        if ($memberIds->duplicates()->isNotEmpty()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'member_id ซ้ำใน updates',
+            ], 422);
+        }
+
         DB::transaction(function () use ($data) {
+            $slotIds = collect($data['updates'])
+                ->pluck('slot_id')
+                ->unique()
+                ->values();
+
+            KvmPartySlot::whereIn('id', $slotIds)->update(['member_id' => null]);
+
             foreach ($data['updates'] as $update) {
                 KvmPartySlot::where('id', $update['slot_id'])
                     ->update(['member_id' => $update['member_id']]);

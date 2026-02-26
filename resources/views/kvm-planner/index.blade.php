@@ -123,6 +123,15 @@
                     'X-CSRF-TOKEN': csrfToken,
                 },
                 body: JSON.stringify({ updates }),
+            })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error('save_failed');
+                }
+                return res.json();
+            })
+            .catch(() => {
+                alert('Save failed');
             });
         }
 

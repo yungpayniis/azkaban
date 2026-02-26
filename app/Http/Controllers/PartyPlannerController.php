@@ -15,6 +15,7 @@ class PartyPlannerController extends Controller
     public function index()
     {
         $parties = Party::with(['slots.member.jobClass.parent'])
+            ->orderBy('position')
             ->orderBy('id')
             ->get()
             ->each(function (Party $party) {
@@ -36,6 +37,22 @@ class PartyPlannerController extends Controller
         return view('party-planner.index', compact('parties', 'unassignedMembers', 'jobClasses'));
     }
 
+    public function view()
+    {
+        $parties = Party::with(['slots.member'])
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get()
+            ->each(function (Party $party) {
+                $party->setRelation(
+                    'slots',
+                    $party->slots->sortBy('position')->values()
+                );
+            });
+
+        return view('party-planner.view', compact('parties'));
+    }
+
     public function updateSlots(Request $request)
     {
         $data = $request->validate([
@@ -44,7 +61,25 @@ class PartyPlannerController extends Controller
             'updates.*.member_id' => ['nullable', 'integer', 'exists:guild_members,id'],
         ]);
 
+        $memberIds = collect($data['updates'])
+            ->pluck('member_id')
+            ->filter(fn ($memberId) => $memberId !== null)
+            ->values();
+        if ($memberIds->duplicates()->isNotEmpty()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'member_id ซ้ำใน updates',
+            ], 422);
+        }
+
         DB::transaction(function () use ($data) {
+            $slotIds = collect($data['updates'])
+                ->pluck('slot_id')
+                ->unique()
+                ->values();
+
+            PartySlot::whereIn('id', $slotIds)->update(['member_id' => null]);
+
             foreach ($data['updates'] as $update) {
                 PartySlot::where('id', $update['slot_id'])
                     ->update(['member_id' => $update['member_id']]);
@@ -57,6 +92,7 @@ class PartyPlannerController extends Controller
     public function autoAssign()
     {
         $parties = Party::with('slots')
+            ->orderBy('position')
             ->orderBy('id')
             ->get()
             ->each(function (Party $party) {
@@ -239,7 +275,10 @@ class PartyPlannerController extends Controller
             // Create new parties for remaining foreign members
             while ($foreignQueue->isNotEmpty()) {
                 $partyNumber = Party::count() + 1;
-                $party = Party::create(['name' => 'Party ' . $partyNumber]);
+                $party = Party::create([
+                    'name' => 'Party ' . $partyNumber,
+                    'position' => ((int) Party::max('position')) + 1,
+                ]);
                 for ($position = 1; $position <= 15; $position++) {
                     $member = $foreignQueue->shift();
                     PartySlot::create([
@@ -253,7 +292,10 @@ class PartyPlannerController extends Controller
             // Create new parties for remaining local members
             while ($localQueue->isNotEmpty()) {
                 $partyNumber = Party::count() + 1;
-                $party = Party::create(['name' => 'Party ' . $partyNumber]);
+                $party = Party::create([
+                    'name' => 'Party ' . $partyNumber,
+                    'position' => ((int) Party::max('position')) + 1,
+                ]);
                 for ($position = 1; $position <= 15; $position++) {
                     $member = $localQueue->shift();
                     PartySlot::create([
@@ -277,7 +319,10 @@ class PartyPlannerController extends Controller
         }
 
         DB::transaction(function () use ($name) {
-            $party = Party::create(['name' => $name]);
+            $party = Party::create([
+                'name' => $name,
+                'position' => ((int) Party::max('position')) + 1,
+            ]);
             for ($position = 1; $position <= 15; $position++) {
                 PartySlot::create([
                     'party_id' => $party->id,
@@ -290,6 +335,30 @@ class PartyPlannerController extends Controller
         return redirect()
             ->route('party-planner.index')
             ->with('status', 'สร้างปาร์ตี้ใหม่เรียบร้อย');
+    }
+
+    public function reorder(Request $request)
+    {
+        $data = $request->validate([
+            'party_ids' => ['required', 'array', 'min:1'],
+            'party_ids.*' => ['required', 'integer', 'distinct', 'exists:parties,id'],
+        ]);
+
+        $totalParties = Party::count();
+        if (count($data['party_ids']) !== $totalParties) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'party_ids ต้องส่งให้ครบทุกปาร์ตี้',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($data) {
+            foreach ($data['party_ids'] as $index => $partyId) {
+                Party::where('id', $partyId)->update(['position' => $index + 1]);
+            }
+        });
+
+        return response()->json(['ok' => true]);
     }
 
     public function update(Request $request, Party $party)

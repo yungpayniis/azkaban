@@ -9,6 +9,7 @@ class Party extends Model
 {
     protected $fillable = [
         'name',
+        'position',
     ];
 
     public function slots(): HasMany
