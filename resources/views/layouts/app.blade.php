@@ -197,11 +197,22 @@
         }
         jQuery('table.datatable').each(function () {
             if (!jQuery(this).hasClass('dataTable')) {
-                jQuery(this).DataTable({
+                const orderColAttr = jQuery(this).attr('data-order-col');
+                const orderDirAttr = (jQuery(this).attr('data-order-dir') || 'asc').toLowerCase();
+                const options = {
                     paging: true,
                     searching: true,
                     ordering: true,
                     pageLength: 10,
+                };
+                if (orderColAttr !== undefined) {
+                    const orderCol = parseInt(orderColAttr, 10);
+                    if (!Number.isNaN(orderCol)) {
+                        options.order = [[orderCol, orderDirAttr === 'desc' ? 'desc' : 'asc']];
+                    }
+                }
+                jQuery(this).DataTable({
+                    ...options,
                 });
             }
         });

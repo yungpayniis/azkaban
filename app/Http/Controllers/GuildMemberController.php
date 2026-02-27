@@ -167,15 +167,22 @@ class GuildMemberController extends Controller
             'stats.agi' => ['required', 'integer', 'min:0'],
             'stats.dex' => ['required', 'integer', 'min:0'],
             'stats.int' => ['required', 'integer', 'min:0'],
-            'stats.hp' => ['required', 'integer', 'min:0'],
-            'stats.sp' => ['required', 'integer', 'min:0'],
+            'stats.max_hp' => ['required_without:stats.hp', 'nullable', 'integer', 'min:0'],
+            'stats.max_sp' => ['required_without:stats.sp', 'nullable', 'integer', 'min:0'],
+            'stats.hp' => ['required_without:stats.max_hp', 'nullable', 'integer', 'min:0'],
+            'stats.sp' => ['required_without:stats.max_sp', 'nullable', 'integer', 'min:0'],
             'stats.patk' => ['required', 'integer', 'min:0'],
             'stats.matk' => ['required', 'integer', 'min:0'],
             'stats.pdef' => ['required', 'integer', 'min:0'],
             'stats.mdef' => ['required', 'integer', 'min:0'],
         ]);
 
-        return $data['stats'];
+        $stats = $data['stats'];
+        $stats['hp'] = (int) ($stats['max_hp'] ?? $stats['hp'] ?? 0);
+        $stats['sp'] = (int) ($stats['max_sp'] ?? $stats['sp'] ?? 0);
+        unset($stats['max_hp'], $stats['max_sp']);
+
+        return $stats;
     }
 
     public function leftMembers()

@@ -118,29 +118,29 @@
         <input id="stat_vit" name="stats[vit]" type="number" min="0"
             value="{{ old('stats.vit', $stat->vit ?? 0) }}" required>
 
-        <label for="stat_luk">LUK</label>
-        <input id="stat_luk" name="stats[luk]" type="number" min="0"
-            value="{{ old('stats.luk', $stat->luk ?? 0) }}" required>
+        <label for="stat_dex">DEX</label>
+        <input id="stat_dex" name="stats[dex]" type="number" min="0"
+            value="{{ old('stats.dex', $stat->dex ?? 0) }}" required>
 
         <label for="stat_agi">AGI</label>
         <input id="stat_agi" name="stats[agi]" type="number" min="0"
             value="{{ old('stats.agi', $stat->agi ?? 0) }}" required>
 
-        <label for="stat_dex">DEX</label>
-        <input id="stat_dex" name="stats[dex]" type="number" min="0"
-            value="{{ old('stats.dex', $stat->dex ?? 0) }}" required>
-
         <label for="stat_int">INT</label>
         <input id="stat_int" name="stats[int]" type="number" min="0"
             value="{{ old('stats.int', $stat->int ?? 0) }}" required>
 
-        <label for="stat_hp">HP</label>
-        <input id="stat_hp" name="stats[hp]" type="number" min="0"
-            value="{{ old('stats.hp', $stat->hp ?? 0) }}" required>
+        <label for="stat_luk">LUK</label>
+        <input id="stat_luk" name="stats[luk]" type="number" min="0"
+            value="{{ old('stats.luk', $stat->luk ?? 0) }}" required>
 
-        <label for="stat_sp">SP</label>
-        <input id="stat_sp" name="stats[sp]" type="number" min="0"
-            value="{{ old('stats.sp', $stat->sp ?? 0) }}" required>
+        <label for="stat_max_hp">MAX HP</label>
+        <input id="stat_max_hp" name="stats[max_hp]" type="number" min="0"
+            value="{{ old('stats.max_hp', old('stats.hp', $stat->hp ?? 0)) }}" required>
+
+        <label for="stat_max_sp">MAX SP</label>
+        <input id="stat_max_sp" name="stats[max_sp]" type="number" min="0"
+            value="{{ old('stats.max_sp', old('stats.sp', $stat->sp ?? 0)) }}" required>
 
         <label for="stat_patk">P.ATK</label>
         <input id="stat_patk" name="stats[patk]" type="number" min="0"
@@ -167,6 +167,8 @@
     @error('stats.agi') <div class="error">{{ $message }}</div> @enderror
     @error('stats.dex') <div class="error">{{ $message }}</div> @enderror
     @error('stats.int') <div class="error">{{ $message }}</div> @enderror
+    @error('stats.max_hp') <div class="error">{{ $message }}</div> @enderror
+    @error('stats.max_sp') <div class="error">{{ $message }}</div> @enderror
     @error('stats.hp') <div class="error">{{ $message }}</div> @enderror
     @error('stats.sp') <div class="error">{{ $message }}</div> @enderror
     @error('stats.patk') <div class="error">{{ $message }}</div> @enderror

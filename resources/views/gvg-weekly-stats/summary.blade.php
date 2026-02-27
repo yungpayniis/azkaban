@@ -25,6 +25,11 @@
                 'avg_cp' => $group->avg('combat_power'),
             ];
         });
+        $jobSummary = $rows
+            ->countBy(function ($row) {
+                return $row['member']?->jobClass?->name ?? 'ไม่ระบุอาชีพ';
+            })
+            ->sortDesc();
     @endphp
 
     <style>
@@ -227,6 +232,24 @@
                                 <td>{{ number_format($summary['count']) }}</td>
                                 <td>{{ number_format($summary['avg_score'] ?? 0, 1) }}</td>
                                 <td>{{ number_format($summary['avg_cp'] ?? 0, 1) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                <h4 style="margin-top: 18px;">สรุปตาม Class Job</h4>
+                <table class="datatable" data-order-col="1" data-order-dir="desc">
+                    <thead>
+                        <tr>
+                            <th>อาชีพ</th>
+                            <th>จำนวนคนที่ลง</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($jobSummary as $job => $count)
+                            <tr>
+                                <td>{{ $job }}</td>
+                                <td>{{ number_format($count) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
